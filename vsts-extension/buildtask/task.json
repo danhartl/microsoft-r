@@ -36,8 +36,7 @@
             "label": "Script Path",
             "defaultValue": "",
             "required": true,
-            "helpMarkDown": "Path of the script. Should be fully qualified path or relative to the default working directory.",
-            "visibleRule": "ScriptType = FilePath"
+            "helpMarkDown": "Path of the script. Should be fully qualified path or relative to the default working directory."
         },
         {
             "name": "InputFiles",
@@ -64,7 +63,7 @@
             "helpMarkDown": "Files that will be downloaded from the remote session after the script runs"
         }
     ],
-    "instanceNameFormat": "Machine Learning Server $(ScriptRuntime) script",
+    "instanceNameFormat": "Machine Learning Server $(ScriptPath) script",
     "execution": {
         "PowerShell3": {
             "target": "RemoteExecute.ps1"

@@ -2,8 +2,8 @@ Trace-VstsEnteringInvocation $MyInvocation
 
 $scriptRuntime = Get-VstsInput -Name ScriptRuntime
 $scriptPath = Get-VstsInput -Name ScriptPath
-$inputFiles = Get-VstsInput -Name InputFiles
-$outputFiles = Get-VstsInput -Name OutputFiles
+$inputFiles = (Get-VstsInput -Name InputFiles).Split("`n`r")
+$outputFiles = (Get-VstsInput -Name OutputFiles).Split("`n`r")
 
 if((Test-Path(".\MLDeploy.DotNet\MLDeploy.DotNet.dll")) -eq $false) {
   Invoke-WebRequest "https://danhartlsetup.blob.core.windows.net/public/MLDeploy.DotNet.zip" -OutFile MLDeploy.DotNet.zip
@@ -18,17 +18,27 @@ $ml = New-Object MLDeploy.DotNet.MLDeploy(
 	"deployruser",
     "Audi@2015Audi@2015")
 
-$rSession = $ml.CreateSession($scriptRuntime)
+Write-Host "Create remote session for $scriptRuntime"
+$sessionId = $ml.CreateSession($scriptRuntime)
+Write-Host "Remote session $sessionId created"
 
 function Push-File([string]$session, [string]$fileName)
 {
+    Write-Host "Pushing file $fileName to remote session $session"
+
+    if((Test-Path($fileName)) -eq $false) {
+        throw ("$fileName not found")
+    }
+    
     $fileStream = [System.IO.File]::OpenRead($fileName)
-	$ml.PushFile($session, $fileStream)
-	$fileStream.Close()
+    $ml.PushFile($session, $fileStream)
+    $fileStream.Close()
 }
 
 function Pull-File([string]$session, [string]$fileName, [string]$destinationPath)
 {
+    Write-Host "Pulling file $fileName from remote session $session to $destinationPath"
+
     $fileStream = $ml.PullFile($session, $fileName)
     $outputStream = [System.IO.File]::OpenWrite($destinationPath)
     $fileStream.CopyTo($outputStream)
@@ -36,30 +46,38 @@ function Pull-File([string]$session, [string]$fileName, [string]$destinationPath
     $outputStream.Close()
 }
 
-function Run-Code([string]$session, [string]$code)
-{
-    $result = $ml.RemoteExecute($session, $code)	
-    Write-Host $result
-}
-
-function Load-SourceFiles([string]$session, $fileName)
+function Load-FileContent([string]$fileName)
 {
     $reader = [System.IO.File]::OpenText($fileName)
     $content = $reader.ReadToEnd()
-    $result = $ml.RemoteExecute($session, $content)	
-    Write-Host $result
     $reader.Close()
+    
+    return $content
 }
+
+$sourceRoot = $Env:SYSTEM_DEFAULTWORKINGDIRECTORY
+$artifacts = $Env:BUILD_ARTIFACTSTAGINGDIRECTORY
 
 foreach($inputFile in $inputFiles) {
-    Write-Host $inputFile
+    $fileName = "$sourceRoot\$inputFile"
+
+    if((Test-Path($fileName)) -eq $false) {
+        Write-Host "File $fileName not found, trying artifacts folder"
+        $fileName = "$artifacts\$inputFile"
+    }
+
+    Push-File $sessionId $fileName
 }
 
-$result = Load-SourceFiles($rSession, $scriptPath)
+$code = Load-FileContent($scriptPath)
+Write-Host "Session $sessionId run: $code"
+
+$result = $ml.RemoteExecute($sessionId, $code)	
 Write-Host $result
 
 foreach($outputFile in $outputFiles) {
-    Write-Host $outputFile
+    Pull-File $sessionId $outputFile "$artifacts\$outputFile"
 }
 
-$ml.CloseSession($rSession)
+Write-Host "Closing session $sessionId"
+$ml.CloseSession($sessionId)
