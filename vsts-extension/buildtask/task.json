@@ -1,0 +1,40 @@
+{
+    "id": "2EA4017F-2E9D-4369-8BB2-2DAD83AFBF4E",
+    "name": "MLSRemoteExec",
+    "friendlyName": "Machine Learning Server Remote Execute",
+    "description": "Remote execute a data science script on Microsoft Machine Learning Server",
+    "helpMarkDown": "[More Information](https://go.microsoft.com/fwlink/?LinkID=613749)",
+    "category": "Build",
+    "visibility": [
+        "Build"
+    ],
+    "runsOn": [
+        "Agent"
+    ],
+    "author": "Microsoft Corporation",
+    "version": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 0
+    },
+    "inputs": [
+        {
+            "name": "ScriptType",
+            "type": "pickList",
+            "label": "Script Type",
+            "required": true,
+            "helpMarkDown": "Type of the script: R or Python Script",
+            "defaultValue": "R",
+            "options": {
+                "R": "R Script",
+                "Python": "Python script"
+            }
+        }
+    ],
+    "instanceNameFormat": "MLS Remote Execute: $(ScriptType)",
+    "execution": {
+        "PowerShell3": {
+            "target": "RemoteExecute.ps1"
+        }
+    }
+}

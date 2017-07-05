@@ -1,0 +1,36 @@
+{
+    "manifestVersion": 1,
+    "id": "microsoft-machine-learning-server",
+    "name": "Machine Learning Server",
+    "version": "0.0.6",
+    "publisher": "danielhartl",
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],    
+    "description": "Tools to remote execute R/Python scripts on Microsoft Machine Learning Server.",
+    "categories": [
+        "Build and release"
+    ],
+    "icons": {
+        "default": "images/extension-icon.png"        
+    },
+    "files": [
+        {
+            "path": "buildtask"
+        }
+    ],
+    "contributions": [
+        {
+            "id": "custom-build-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "buildtask"
+            }
+        }
+    ]
+}
