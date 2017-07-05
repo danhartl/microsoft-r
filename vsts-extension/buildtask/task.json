@@ -1,8 +1,8 @@
 {
     "id": "2EA4017F-2E9D-4369-8BB2-2DAD83AFBF4E",
-    "name": "MLSRemoteExec",
-    "friendlyName": "Machine Learning Server Remote Execute",
-    "description": "Remote execute a data science script on Microsoft Machine Learning Server",
+    "name": "MLSRunScript",
+    "friendlyName": "Machine Learning Server Script",
+    "description": "Run a data science script on Microsoft Machine Learning Server",
     "helpMarkDown": "[More Information](https://go.microsoft.com/fwlink/?LinkID=613749)",
     "category": "Build",
     "visibility": [
@@ -19,19 +19,52 @@
     },
     "inputs": [
         {
-            "name": "ScriptType",
+            "name": "ScriptRuntime",
             "type": "pickList",
-            "label": "Script Type",
+            "label": "Script Runtime",
             "required": true,
-            "helpMarkDown": "Type of the script: R or Python Script",
+            "helpMarkDown": "Runtime of the script: R or Python Script",
             "defaultValue": "R",
             "options": {
                 "R": "R Script",
                 "Python": "Python script"
             }
+        },
+        {
+            "name": "ScriptPath",
+            "type": "filePath",
+            "label": "Script Path",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Path of the script. Should be fully qualified path or relative to the default working directory.",
+            "visibleRule": "ScriptType = FilePath"
+        },
+        {
+            "name": "InputFiles",
+            "type": "multiLine",
+            "properties": {
+                "resizable": "true",
+                "rows": "2"
+            },
+            "label": "Files to upload before script invocation",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Files that will be uploaded to the remote session before the script runs"
+        },
+        {
+            "name": "OutputFiles",
+            "type": "multiLine",
+            "properties": {
+                "resizable": "true",
+                "rows": "2"
+            },
+            "label": "Files to download after script invocation",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Files that will be downloaded from the remote session after the script runs"
         }
     ],
-    "instanceNameFormat": "MLS Remote Execute: $(ScriptType)",
+    "instanceNameFormat": "Machine Learning Server $(ScriptRuntime) script",
     "execution": {
         "PowerShell3": {
             "target": "RemoteExecute.ps1"

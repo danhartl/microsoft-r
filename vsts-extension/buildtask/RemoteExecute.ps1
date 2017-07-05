@@ -1,3 +1,10 @@
+Trace-VstsEnteringInvocation $MyInvocation
+
+$scriptRuntime = Get-VstsInput -Name ScriptRuntime
+$scriptPath = Get-VstsInput -Name ScriptPath
+$inputFiles = Get-VstsInput -Name InputFiles
+$outputFiles = Get-VstsInput -Name OutputFiles
+
 if((Test-Path(".\MLDeploy.DotNet\MLDeploy.DotNet.dll")) -eq $false) {
   Invoke-WebRequest "https://danhartlsetup.blob.core.windows.net/public/MLDeploy.DotNet.zip" -OutFile MLDeploy.DotNet.zip
   Expand-Archive .\MLDeploy.DotNet.zip
@@ -11,7 +18,7 @@ $ml = New-Object MLDeploy.DotNet.MLDeploy(
 	"deployruser",
     "Audi@2015Audi@2015")
 
-$rSession = $ml.CreateSession("R")
+$rSession = $ml.CreateSession($scriptRuntime)
 
 function Push-File([string]$session, [string]$fileName)
 {
@@ -35,21 +42,24 @@ function Run-Code([string]$session, [string]$code)
     Write-Host $result
 }
 
-function Load-SourceFiles([string]$session, $fileNames)
+function Load-SourceFiles([string]$session, $fileName)
 {
-    ForEach ($fileName In $fileNames)
-    {
-        $reader = [System.IO.File]::OpenText($fileName)
-        $content = $reader.ReadToEnd()
-        $result = $ml.RemoteExecute($session, $content)	
-        Write-Host $result
-        $reader.Close()
-    }   
+    $reader = [System.IO.File]::OpenText($fileName)
+    $content = $reader.ReadToEnd()
+    $result = $ml.RemoteExecute($session, $content)	
+    Write-Host $result
+    $reader.Close()
 }
 
-Write-Host "RunFit"
+foreach($inputFile in $inputFiles) {
+    Write-Host $inputFile
+}
 
-$result = $ml.RemoteExecute($rSession, "x <- 42; print(x)")
+$result = Load-SourceFiles($rSession, $scriptPath)
 Write-Host $result
+
+foreach($outputFile in $outputFiles) {
+    Write-Host $outputFile
+}
 
 $ml.CloseSession($rSession)
