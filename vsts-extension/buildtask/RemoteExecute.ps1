@@ -55,18 +55,10 @@ function Load-FileContent([string]$fileName)
     return $content
 }
 
-$sourceRoot = $Env:SYSTEM_DEFAULTWORKINGDIRECTORY
 $artifacts = $Env:BUILD_ARTIFACTSTAGINGDIRECTORY
 
-foreach($inputFile in $inputFiles) {
-    $fileName = "$sourceRoot\$inputFile"
-
-    if((Test-Path($fileName)) -eq $false) {
-        Write-Host "File $fileName not found, trying artifacts folder"
-        $fileName = "$artifacts\$inputFile"
-    }
-
-    Push-File $sessionId $fileName
+foreach($inputFile in $inputFiles | Resolve-Path | Where-Object { [string]::IsNullOrEmpty($_) -eq $false }) {
+    Push-File $sessionId $inputFile
 }
 
 $code = Load-FileContent($scriptPath)
@@ -75,7 +67,7 @@ Write-Host "Session $sessionId run: $code"
 $result = $ml.RemoteExecute($sessionId, $code)	
 Write-Host $result
 
-foreach($outputFile in $outputFiles) {
+foreach($outputFile in $outputFiles | Where-Object { [string]::IsNullOrEmpty($_) -eq $false }) {
     Pull-File $sessionId $outputFile "$artifacts\$outputFile"
 }
 
