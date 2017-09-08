@@ -14,9 +14,10 @@ if((Test-Path(".\MLDeploy.DotNet\MLDeploy.DotNet.dll")) -eq $false) {
 [Reflection.Assembly]::LoadFrom("$PSScriptRoot\MLDeploy.DotNet\MLDeploy.DotNet.dll") >$null 2>&1
 
 $ml = New-Object MLDeploy.DotNet.MLDeploy(
-    "https://deployr.mrs.microsoft-tst.com",
-	"deployruser",
-    "Audi@2015Audi@2015")
+    "https://deployr2.mrs.microsoft-tst.com",
+	"deployrtest.onmicrosoft.com",
+    "a053a63e-8af5-480b-9510-48bb32e44be8",
+	"tkW7ec5jToSVsRm6l6Y7mgd9pDI1iyQFaLWdmum9PlY=")
 
 Write-Host "Create remote session for $scriptRuntime"
 $sessionId = $ml.CreateSession($scriptRuntime)
